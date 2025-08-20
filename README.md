@@ -17,12 +17,12 @@ Hover over the status bar item to see detailed breakdown:
 
 ```
 Staged (+2):
-  Net:+2 Add:+5 Del:-3 [New] fileA.ts
-  Net:+1 Add:+2 Del:-1 [Mod] fileB.js
+  Net:+2 (+5-3) [New] fileA.ts
+  Net:+1 (+2-1) [Mod] fileB.js
 
 Changes (+8):
-  Net:+8 Add:+10 Del:-2 [New] fileC.py
-  Net:+2 Add:+3 Del:-1 [Mod] fileD.txt
+  Net:+8 (+10-2) [New] fileC.py
+  Net:+2 (+3-1) [Mod] fileD.txt
 
 Total: Net:+10 Add:+15 Del:-5
 ```
@@ -51,6 +51,12 @@ This extension contributes no settings through `package.json`.
 No known issues at this time.
 
 ## Release Notes
+
+### 0.0.2
+- Simplified tooltip format: `Add:+X Del:-Y` → `(+X-Y)`
+- Show file names only instead of full paths in tooltip
+- Sort files by net line changes (descending order: +999 to -999)
+- Updated version to 0.0.2
 
 ### 0.0.1
 - Initial release

@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { simpleGit, SimpleGit } from 'simple-git';
 
 let statusBarItem: vscode.StatusBarItem;
@@ -117,8 +118,8 @@ async function getLineStats(): Promise<LineStats | null> {
         }
 
         // Sort files by net lines (descending)
-        changesFiles.sort((a, b) => Math.abs(b.netLines) - Math.abs(a.netLines));
-        stagedFiles.sort((a, b) => Math.abs(b.netLines) - Math.abs(a.netLines));
+        changesFiles.sort((a, b) => b.netLines - a.netLines);
+        stagedFiles.sort((a, b) => b.netLines - a.netLines);
 
         console.log('Line stats:', { changesLinesAdded, changesLinesDeleted, stagedLinesAdded, stagedLinesDeleted });
 
@@ -172,14 +173,16 @@ function updateStatusBar() {
         
         // Add file rows
         for (const file of stats.stagedFiles) {
-            stagedTooltip.push(`  Net:${file.netLines >= 0 ? '+' : ''}${file.netLines} Add:+${file.linesAdded} Del:${file.linesDeleted >= 0 ? '-' : ''}${file.linesDeleted} [${file.status}] ${file.path}`);
+            const fileName = path.basename(file.path);
+            stagedTooltip.push(`  Net:${file.netLines >= 0 ? '+' : ''}${file.netLines} (+${file.linesAdded}${file.linesDeleted >= 0 ? '-' : ''}${file.linesDeleted}) [${file.status}] ${fileName}`);
         }
 
         const changesTooltip = [`\nChanges (${changesNetLines >= 0 ? '+' : ''}${changesNetLines}):`];
         
         // Add file rows
         for (const file of stats.changesFiles) {
-            changesTooltip.push(`  Net:${file.netLines >= 0 ? '+' : ''}${file.netLines} Add:+${file.linesAdded} Del:${file.linesDeleted >= 0 ? '-' : ''}${file.linesDeleted} [${file.status}] ${file.path}`);
+            const fileName = path.basename(file.path);
+            changesTooltip.push(`  Net:${file.netLines >= 0 ? '+' : ''}${file.netLines} (+${file.linesAdded}${file.linesDeleted >= 0 ? '-' : ''}${file.linesDeleted}) [${file.status}] ${fileName}`);
         }
 
         const totalAdd = stats.stagedLinesAdded + stats.changesLinesAdded;
