@@ -7,3 +7,4 @@ out/
 .specstory/
 .cursorindexingignore
 CLAUDE.md
+.vscode/
