@@ -82,6 +82,29 @@ npm run watch
 - Press `F5` to run the extension in a new Extension Development Host window
 - Set breakpoints in `src/extension.ts` to debug the extension
 
+### Package Extension
+```bash
+# Install vsce globally if not already installed
+npm install -g @vscode/vsce
+
+# Package the extension
+npm run package
+```
+This will create a `.vsix` file in the project root.
+
+### Install Extension
+```bash
+# Install the packaged extension
+code --install-extension git-line-diff-counter-1.0.0.vsix
+```
+
+### Publish Extension
+```bash
+# Publish to VS Code Marketplace
+npm run publish
+```
+Note: You need to have a publisher account and Azure DevOps token configured.
+
 ## Technology Stack
 
 - **TypeScript** - Main language

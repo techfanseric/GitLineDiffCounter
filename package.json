@@ -18,7 +18,9 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "node esbuild.js",
-    "watch": "node esbuild.js --watch"
+    "watch": "node esbuild.js --watch",
+    "package": "vsce package",
+    "publish": "vsce publish"
   },
   "devDependencies": {
     "@types/vscode": "^1.60.0",
