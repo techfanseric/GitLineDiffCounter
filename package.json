@@ -2,8 +2,8 @@
   "name": "git-line-diff-counter",
   "displayName": "Git Line Diff Counter",
   "description": "Show git working directory and staging area line change statistics in status bar",
-  "version": "1.0.0",
-  "publisher": "ericyim",
+  "version": "0.0.1",
+  "publisher": "techfanseric",
   "engines": {
     "vscode": "^1.60.0"
   },
