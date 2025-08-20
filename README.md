@@ -37,6 +37,10 @@ Total: +10 (+15-5)
 ### Real-time Updates
 - Automatically updates when files are modified
 - Updates when files are saved
+- Updates when files are created, deleted, or renamed
+- Updates when git operations are performed (add, remove, commit, checkout, etc.)
+- Updates when files are moved between staging and working directory
+- Updates when file modifications are undone or restored
 - Manual refresh via command: `Git Line Diff Counter: Refresh`
 
 ## Requirements
@@ -53,6 +57,19 @@ This extension contributes no settings through `package.json`.
 No known issues at this time.
 
 ## Release Notes
+
+### 0.0.4
+- **Enhanced file change detection**: Now supports deleted file line count statistics by retrieving content from git history
+- **Untracked file support**: Added statistics for untracked (new) files in addition to staged files
+- **Comprehensive event monitoring**: Expanded real-time updates to cover all file system operations:
+  - File creation, deletion, and renaming
+  - Git operations (add, remove, commit, checkout, undo, restore)
+  - File movements between staging and working directory
+  - Terminal git command execution
+  - Configuration changes and document open/close events
+- **Improved error handling**: Added debounce mechanism (500ms) to prevent overwhelming the system with frequent updates
+- **Better error messages**: Distinguished between "No workspace" and "No repository" errors for clearer user feedback
+- **Enhanced stability**: Fixed syntax errors and improved overall extension reliability
 
 ### 0.0.3
 - Enhanced status bar display with add/delete breakdown format
