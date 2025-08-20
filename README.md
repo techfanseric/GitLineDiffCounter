@@ -52,7 +52,7 @@ No known issues at this time.
 
 ## Release Notes
 
-### 1.0.0
+### 0.0.1
 - Initial release
 - Display staged and unstaged line changes in status bar
 - Detailed tooltip with file-by-file breakdown
@@ -95,7 +95,7 @@ This will create a `.vsix` file in the project root.
 ### Install Extension
 ```bash
 # Install the packaged extension
-code --install-extension git-line-diff-counter-1.0.0.vsix
+code --install-extension git-line-diff-counter-0.0.1.vsix
 ```
 
 
