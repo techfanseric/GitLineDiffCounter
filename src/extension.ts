@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 import { simpleGit, SimpleGit } from 'simple-git';
 
 let statusBarItem: vscode.StatusBarItem;
@@ -11,6 +12,7 @@ interface FileChange {
     linesDeleted: number;
     netLines: number;
     status: 'New' | 'Mod' | 'Del';
+    totalLines: number;
 }
 
 interface LineStats {
@@ -23,6 +25,25 @@ interface LineStats {
     stagedLinesAdded: number;
     stagedLinesDeleted: number;
     stagedFiles: FileChange[];
+}
+
+async function getFileTotalLines(filePath: string): Promise<number> {
+    try {
+        const rootPath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (!rootPath) {
+            return 0;
+        }
+        
+        const fullPath = path.join(rootPath, filePath);
+        if (!fs.existsSync(fullPath)) {
+            return 0;
+        }
+        
+        const content = fs.readFileSync(fullPath, 'utf8');
+        return content.split('\n').length;
+    } catch (error) {
+        return 0;
+    }
 }
 
 async function getLineStats(): Promise<LineStats | null> {
@@ -70,12 +91,15 @@ async function getLineStats(): Promise<LineStats | null> {
                     }
                 }
                 
+                const totalLines = await getFileTotalLines(path);
+                
                 changesFiles.push({
                     path,
                     linesAdded: add,
                     linesDeleted: del,
                     netLines: add - del,
-                    status: fileStatus
+                    status: fileStatus,
+                    totalLines
                 });
             }
         }
@@ -107,12 +131,15 @@ async function getLineStats(): Promise<LineStats | null> {
                     }
                 }
                 
+                const totalLines = await getFileTotalLines(path);
+                
                 stagedFiles.push({
                     path,
                     linesAdded: add,
                     linesDeleted: del,
                     netLines: add - del,
-                    status: fileStatus
+                    status: fileStatus,
+                    totalLines
                 });
             }
         }
@@ -151,43 +178,65 @@ function updateStatusBar() {
 
         let text = '$(git-commit) ';
         
-        if (stagedNetLines !== 0) {
-            text += `Staged:${stagedNetLines >= 0 ? '+' : ''}${stagedNetLines}`;
-        }
+        const totalAdd = stats.stagedLinesAdded + stats.changesLinesAdded;
+        const totalDel = stats.stagedLinesDeleted + stats.changesLinesDeleted;
         
-        if (changesNetLines !== 0) {
-            if (stagedNetLines !== 0) text += ', ';
-            text += `Changes:${changesNetLines >= 0 ? '+' : ''}${changesNetLines}`;
+        // Check if only one area has changes
+        const hasStaged = stagedNetLines !== 0;
+        const hasChanges = changesNetLines !== 0;
+        const singleArea = (hasStaged && !hasChanges) || (!hasStaged && hasChanges);
+        
+        if (singleArea) {
+            // Single area: show total with add/del format
+            const areaNetLines = hasStaged ? stagedNetLines : changesNetLines;
+            const areaAdd = hasStaged ? stats.stagedLinesAdded : stats.changesLinesAdded;
+            const areaDel = hasStaged ? stats.stagedLinesDeleted : stats.changesLinesDeleted;
+            
+            if (hasStaged) {
+                text += `${areaNetLines >= 0 ? '+' : ''}${areaNetLines} (+${areaAdd}-${areaDel})`;
+            } else {
+                text += `${areaNetLines >= 0 ? '+' : ''}${areaNetLines} (+${areaAdd}-${areaDel})`;
+            }
+        } else {
+            // Multiple areas: show each area with add/del format
+            if (stagedNetLines !== 0) {
+                text += `Staged:${stagedNetLines >= 0 ? '+' : ''}${stagedNetLines} (+${stats.stagedLinesAdded}-${stats.stagedLinesDeleted})`;
+            }
+            
+            if (changesNetLines !== 0) {
+                if (stagedNetLines !== 0) text += ', ';
+                text += `Changes:${changesNetLines >= 0 ? '+' : ''}${changesNetLines} (+${stats.changesLinesAdded}-${stats.changesLinesDeleted})`;
+            }
+            
+            if (stagedNetLines !== 0 || changesNetLines !== 0) {
+                text += `, Total:${totalNetLines >= 0 ? '+' : ''}${totalNetLines} (+${totalAdd}-${totalDel})`;
+            }
         }
         
         if (stagedNetLines === 0 && changesNetLines === 0) {
             text += 'Clean';
-        } else {
-            text += `, Total:${totalNetLines >= 0 ? '+' : ''}${totalNetLines}`;
         }
 
         statusBarItem.text = text;
         
-        // Generate detailed tooltip with simple line format
-        const stagedTooltip = [`Staged (${stagedNetLines >= 0 ? '+' : ''}${stagedNetLines}):`];
+        // Generate detailed tooltip with new format
+        const stagedTooltip = [`Staged: ${stagedNetLines >= 0 ? '+' : ''}${stagedNetLines} (+${stats.stagedLinesAdded}-${stats.stagedLinesDeleted})`];
         
         // Add file rows
         for (const file of stats.stagedFiles) {
             const fileName = path.basename(file.path);
-            stagedTooltip.push(`  Net:${file.netLines >= 0 ? '+' : ''}${file.netLines} (+${file.linesAdded}${file.linesDeleted >= 0 ? '-' : ''}${file.linesDeleted}) [${file.status}] ${fileName}`);
+            stagedTooltip.push(`  ${file.netLines >= 0 ? '+' : ''}${file.netLines} (+${file.linesAdded}-${file.linesDeleted})=${file.totalLines} [${file.status}] ${fileName}`);
         }
 
-        const changesTooltip = [`\nChanges (${changesNetLines >= 0 ? '+' : ''}${changesNetLines}):`];
+        const changesTooltip = [`\nChanges: ${changesNetLines >= 0 ? '+' : ''}${changesNetLines} (+${stats.changesLinesAdded}-${stats.changesLinesDeleted})`];
         
         // Add file rows
         for (const file of stats.changesFiles) {
             const fileName = path.basename(file.path);
-            changesTooltip.push(`  Net:${file.netLines >= 0 ? '+' : ''}${file.netLines} (+${file.linesAdded}${file.linesDeleted >= 0 ? '-' : ''}${file.linesDeleted}) [${file.status}] ${fileName}`);
+            changesTooltip.push(`  ${file.netLines >= 0 ? '+' : ''}${file.netLines} (+${file.linesAdded}-${file.linesDeleted})=${file.totalLines} [${file.status}] ${fileName}`);
         }
 
-        const totalAdd = stats.stagedLinesAdded + stats.changesLinesAdded;
-        const totalDel = stats.stagedLinesDeleted + stats.changesLinesDeleted;
-        const totalTooltip = [`\nTotal: Net:${totalNetLines >= 0 ? '+' : ''}${totalNetLines} Add:+${totalAdd} Del:${totalDel >= 0 ? '-' : ''}${totalDel}`];
+        const totalTooltip = [`\nTotal: ${totalNetLines >= 0 ? '+' : ''}${totalNetLines} (+${totalAdd}-${totalDel})`];
 
         statusBarItem.tooltip = [...stagedTooltip, ...changesTooltip, ...totalTooltip].join('\n');
     });

@@ -6,25 +6,27 @@ A VS Code extension that displays git line change statistics in the status bar, 
 
 ### Status Bar Display
 Shows a summary of line changes in the status bar:
-- `Staged:+X` - Net lines added/removed in staging area
-- `Changes:+Y` - Net lines added/removed in working directory  
-- `Total:+Z` - Combined net changes
+- **Single area**: `+10 (+15-5)` - Shows net changes with add/delete breakdown
+- **Multiple areas**: `Staged:+2 (+5-3), Changes:+8 (+10-2), Total:+10 (+15-5)` - Shows each area with add/delete breakdown
+- **Clean**: `Clean` - No changes
 
-Example: `$(git-commit) Staged:+2, Changes:+8, Total:+10`
+Examples:
+- `$(git-commit) +10 (+15-5)` (single area with changes)
+- `$(git-commit) Staged:+2 (+5-3), Changes:+8 (+10-2), Total:+10 (+15-5)` (multiple areas)
 
 ### Detailed Tooltip
 Hover over the status bar item to see detailed breakdown:
 
 ```
-Staged (+2):
-  Net:+2 (+5-3) [New] fileA.ts
-  Net:+1 (+2-1) [Mod] fileB.js
+Staged: +2 (+5-3)
+  +2 (+5-3)=150 [New] fileA.ts
+  +1 (+2-1)=200 [Mod] fileB.js
 
-Changes (+8):
-  Net:+8 (+10-2) [New] fileC.py
-  Net:+2 (+3-1) [Mod] fileD.txt
+Changes: +8 (+10-2)
+  +8 (+10-2)=300 [New] fileC.py
+  +2 (+3-1)=180 [Mod] fileD.txt
 
-Total: Net:+10 Add:+15 Del:-5
+Total: +10 (+15-5)
 ```
 
 ### File Status Indicators
@@ -51,6 +53,14 @@ This extension contributes no settings through `package.json`.
 No known issues at this time.
 
 ## Release Notes
+
+### 0.0.3
+- Enhanced status bar display with add/delete breakdown format
+- Improved tooltip format with file total line count  
+- Removed "Net:" prefix from file entries for cleaner display
+- Single area shows simplified format: `+10 (+15-5)`
+- File entries now show total line count: `+2 (+5-3)=150 [New] fileA.ts`
+- All areas display consistent add/delete breakdown format
 
 ### 0.0.2
 - Simplified tooltip format: `Add:+X Del:-Y` → `(+X-Y)`
