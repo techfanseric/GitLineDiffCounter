@@ -98,12 +98,6 @@ This will create a `.vsix` file in the project root.
 code --install-extension git-line-diff-counter-1.0.0.vsix
 ```
 
-### Publish Extension
-```bash
-# Publish to VS Code Marketplace
-npm run publish
-```
-Note: You need to have a publisher account and Azure DevOps token configured.
 
 ## Technology Stack
 
